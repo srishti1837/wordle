@@ -1,5 +1,6 @@
-import { WORDS } from "./regularWords.js"; // Fixed path from words.js to regularWords.js
-import { DAILY_WORDS } from "./dailyWords.js"; // Added import for Daily Mode
+import { WORDS } from "./WORDLE-insider/data-wordle/regularWords.js";
+import { DAILY_WORDS } from "./WORDLE-insider/data-wordle/dailyWords.js"; 
+import { VALID_GUESSES } from "./WORDLE-insider/data-wordle/words.js"; // THE NEW BIG LIBRARY
 
 const NUMBER_OF_GUESSES = 6;
 let guessesRemaining = NUMBER_OF_GUESSES;
@@ -123,68 +124,76 @@ function deleteLetter () {
 
 function checkGuess() {
     let row = document.getElementsByClassName("letter-row")[6 - guessesRemaining];
-    let guessString = currentGuess.join(""); // Optimized string building
-    let rightGuess = Array.from(rightGuessString);
+    let guessString = currentGuess.join("").toLowerCase();
+    let rightGuess = Array.from(rightGuessString.toLowerCase());
 
+    // 1. Length Check
     if (guessString.length != 5) {
         toastr.error("Not enough letters!");
-        return;
+        return; 
     }
 
-    // --- CRITICAL FIX: Normalizing the word list for comparison ---
-    // We lowercase and trim the list to make sure formatting errors don't break the check
-    const wordExists = currentWordsList.some(word => word.trim().toLowerCase() === guessString);
+    // 2. Gibberish vs. Valid Word Validation
+    // Check if the word exists in ANY of our libraries
+    const isRealWord = VALID_GUESSES.includes(guessString) || 
+                        DAILY_WORDS.includes(guessString) || 
+                        WORDS.includes(guessString);
 
-    if (!wordExists) {
-        toastr.error("Word not in list!");
-        return;
+    if (!isRealWord) {
+        // GIBBERISH: e.g., "qwert"
+        toastr.warning("Not in word list!");
+        animateCSS(row, 'shakeX'); // Row shakes, but no attempt is lost
+        return; // EXIT: User stays on the same line
     }
 
-    // --- SHADING LOGIC ---
+    // 3. Shading Logic (If we reach here, it's a valid attempt)
     for (let i = 0; i < 5; i++) {
-        let letterColor = '';
         let box = row.children[i];
         let letter = currentGuess[i];
+        let letterColor = '';
 
-        // Check if the letter is in the correct spot
+        // Match Logic
         if (guessString[i] === rightGuessString[i]) {
-            letterColor = 'green';
-            rightGuess[i] = "#"; // Mark as handled
-        } 
-        // Check if letter exists elsewhere in the word
-        else if (rightGuess.includes(letter)) {
-            letterColor = 'yellow';
-            rightGuess[rightGuess.indexOf(letter)] = "#"; // Mark as handled
-        } 
-        else {
-            letterColor = 'grey';
+            letterColor = '#4A7C59'; // Dark Green
+            rightGuess[i] = "#"; 
+        } else if (rightGuess.includes(letter)) {
+            letterColor = '#B8922A'; // Mustard Yellow
+            rightGuess[rightGuess.indexOf(letter)] = "#"; 
+        } else {
+            letterColor = '#787c7e'; // Grey
         }
 
-        let delay = 250 * i;
+        // Apply visual updates with a staggered delay
         setTimeout(() => {
             animateCSS(box, 'flipInX');
             box.style.backgroundColor = letterColor;
+            box.style.borderColor = letterColor;
+            box.style.color = "white"; // Ensures text is readable
             shadeKeyBoard(letter, letterColor);
-        }, delay);
+        }, 250 * i);
     }
 
-    // --- WIN/LOSS LOGIC ---
+    // 4. Win/Loss and Turn Management
     if (guessString === rightGuessString) {
-        toastr.success("You guessed right! Game over!");
+        // Success
+        setTimeout(() => {
+            toastr.success("Excellent! You found the word.");
+        }, 1500); // Wait for the last tile to flip
         guessesRemaining = 0;
-        return;
     } else {
+        // Valid but wrong word: Turn is officially used
         guessesRemaining -= 1;
         currentGuess = [];
         nextLetter = 0;
 
         if (guessesRemaining === 0) {
-            toastr.error("You've run out of guesses! Game over!");
-            toastr.info(`The right word was: "${rightGuessString}"`);
+            setTimeout(() => {
+                toastr.error("Out of turns!");
+                toastr.info(`The word was: ${rightGuessString.toUpperCase()}`);
+            }, 1500);
         }
     }
 }
-
 function insertLetter (pressedKey) {
     if (nextLetter === 5) {
         return

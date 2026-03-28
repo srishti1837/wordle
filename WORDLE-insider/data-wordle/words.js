@@ -1,5 +1,4 @@
-//database for regular game mode, contains all the words that can be used in regular game mode.
-export const WORDS = [
+export const VALID_GUESSES = [
     'which',
     'there',
     'their',

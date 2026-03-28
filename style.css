@@ -2,13 +2,13 @@
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background-color: #f3e7d3; /* beige background */
+    background-color: #f5eed2; /* beige background */
 }
 
 /* HEADER */
 .header-banner {
-    background-color: #7a0f1e; /* maroon */
-    color: #f3e7d3;
+    background-color: #690609; /* maroon */
+    color: #f5eed2;
     text-align: center;
     padding: 1rem 0;
     letter-spacing: 2px;
@@ -229,4 +229,27 @@ body {
 .tile.absent {
     background: #777;
     color: white;
+}
+
+/* --- Custom Maroon Toastr Theme --- */
+
+/* This targets ALL toasts (Success, Error, Warning) to be Maroon */
+#toast-container > .toast {
+    background-color: #7a0f1e !important; /* Your Maroon Color */
+    background-image: none !important;    /* Removes default icons for a cleaner look */
+    color: #ffffff !important;            /* White text */
+    opacity: 1 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    border-radius: 5px !important;
+    font-family: 'Segoe UI', sans-serif !important;
+}
+
+/* Optional: If you want 'Success' to be a different shade of Maroon or Green */
+#toast-container > .toast-success {
+    background-color: #4A7C59 !important; /* Keeps the Green for winning */
+}
+
+/* This specifically kills the Orange for "Not in list" */
+#toast-container > .toast-warning {
+    background-color: #7a0f1e !important; 
 }
